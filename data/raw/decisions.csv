@@ -1,0 +1,5 @@
+participant_id,scenario_id,condition,initial_decision,initial_confidence,ai_recommendation,ai_confidence,final_decision,final_confidence
+72081ed7-7c55-4933-ad38-4a9bd453875b,investment_001,human_only,,,,,Invest,50
+72081ed7-7c55-4933-ad38-4a9bd453875b,investment_001,human_only,,,,,Invest,50
+72081ed7-7c55-4933-ad38-4a9bd453875b,investment_001,human_only,,,,,Invest,50
+72081ed7-7c55-4933-ad38-4a9bd453875b,investment_001,human_only,,,,,Invest,50
