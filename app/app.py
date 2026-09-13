@@ -1,10 +1,3 @@
-import sys
-from pathlib import Path
-
-# Add project root to Python's import path.
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(PROJECT_ROOT))
-
 import uuid
 
 import streamlit as st
@@ -12,9 +5,14 @@ import streamlit as st
 from src.decisions.scenarios import SCENARIOS
 from src.experiment.experiment import (
     DecisionRecord,
-    ExperimentCondition,
+    assign_condition,
 )
 from src.experiment.storage import save_decision
+
+
+# --------------------------------------------------
+# Page configuration
+# --------------------------------------------------
 
 st.set_page_config(
     page_title="AI Decision Quality Lab",
@@ -22,6 +20,10 @@ st.set_page_config(
     layout="centered",
 )
 
+
+# --------------------------------------------------
+# Title
+# --------------------------------------------------
 
 st.title("🧠 AI Decision Quality Lab")
 
@@ -36,14 +38,32 @@ st.divider()
 
 
 # --------------------------------------------------
-# Participant
+# Participant ID
 # --------------------------------------------------
 
 if "participant_id" not in st.session_state:
     st.session_state.participant_id = str(uuid.uuid4())
 
-
 participant_id = st.session_state.participant_id
+
+
+# --------------------------------------------------
+# Experimental condition
+# --------------------------------------------------
+
+if "condition" not in st.session_state:
+    st.session_state.condition = assign_condition()
+
+condition = st.session_state.condition
+
+
+# --------------------------------------------------
+# Development information
+# --------------------------------------------------
+
+st.caption(
+    f"Experimental condition: {condition.value}"
+)
 
 
 # --------------------------------------------------
@@ -55,6 +75,11 @@ scenario = SCENARIOS[0]
 st.subheader(scenario.title)
 
 st.write(scenario.description)
+
+
+# --------------------------------------------------
+# Scenario information
+# --------------------------------------------------
 
 col1, col2 = st.columns(2)
 
@@ -98,17 +123,27 @@ decision = st.radio(
     ],
 )
 
+
+# --------------------------------------------------
+# Confidence
+# --------------------------------------------------
+
 confidence = st.slider(
-    "How confident are you?",
+    "How confident are you in your decision?",
     min_value=0,
     max_value=100,
     value=50,
     step=1,
 )
 
+st.write(f"Confidence: **{confidence}%**")
+
+
+st.divider()
+
 
 # --------------------------------------------------
-# Submit
+# Submit decision
 # --------------------------------------------------
 
 if st.button(
@@ -119,7 +154,7 @@ if st.button(
     record = DecisionRecord(
         participant_id=participant_id,
         scenario_id=scenario.scenario_id,
-        condition=ExperimentCondition.HUMAN_ONLY,
+        condition=condition,
         initial_decision=None,
         initial_confidence=None,
         ai_recommendation=None,
@@ -130,9 +165,9 @@ if st.button(
 
     save_decision(record)
 
-    st.success("Decision recorded!")
+    st.success("Decision recorded successfully!")
 
-    st.write("### Recorded observation")
+    st.subheader("Recorded Observation")
 
     st.write(
         {

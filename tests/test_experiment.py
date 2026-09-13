@@ -1,7 +1,8 @@
 from src.decisions.scenarios import SCENARIOS
 from src.experiment.experiment import (
-    ExperimentCondition,
     DecisionRecord,
+    ExperimentCondition,
+    assign_condition,
 )
 
 
@@ -30,3 +31,9 @@ def test_decision_record():
 
     assert record.final_decision == "Invest"
     assert record.final_confidence == 80
+
+
+def test_condition_assignment():
+    condition = assign_condition()
+
+    assert condition in list(ExperimentCondition)

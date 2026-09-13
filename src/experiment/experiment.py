@@ -1,13 +1,14 @@
+from dataclasses import dataclass
 from enum import Enum
+from typing import Optional
+
+import random
 
 
 class ExperimentCondition(Enum):
     HUMAN_ONLY = "human_only"
     AI_POINT_ESTIMATE = "ai_point_estimate"
     AI_UNCERTAINTY = "ai_uncertainty"
-
-from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass
@@ -23,4 +24,12 @@ class DecisionRecord:
     ai_confidence: Optional[int]
 
     final_decision: str
-    final_confidence: int    
+    final_confidence: int
+
+
+def assign_condition() -> ExperimentCondition:
+    """Randomly assign a participant to an experimental condition."""
+
+    return random.choice(
+        list(ExperimentCondition)
+    )
