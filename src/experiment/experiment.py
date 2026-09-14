@@ -26,6 +26,10 @@ class DecisionRecord:
     final_decision: str
     final_confidence: int
 
+    optimal_decision: str
+    expected_value: float
+    decision_quality: int
+
 
 def assign_condition() -> ExperimentCondition:
     """Randomly assign a participant to an experimental condition."""

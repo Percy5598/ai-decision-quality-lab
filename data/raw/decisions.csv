@@ -4,3 +4,12 @@ participant_id,scenario_id,condition,initial_decision,initial_confidence,ai_reco
 72081ed7-7c55-4933-ad38-4a9bd453875b,investment_001,human_only,,,,,Invest,50
 72081ed7-7c55-4933-ad38-4a9bd453875b,investment_001,human_only,,,,,Invest,50
 bcd78b52-0e51-428b-83bd-7944b112aa1c,investment_001,human_only,,,,,Invest,50
+71943476-538c-46bc-a8b0-5e4989644eb2,investment_001,human_only,,,,,Invest,50
+71943476-538c-46bc-a8b0-5e4989644eb2,investment_001,human_only,,,,,Invest,50
+71943476-538c-46bc-a8b0-5e4989644eb2,investment_001,human_only,,,,,Invest,50
+71943476-538c-46bc-a8b0-5e4989644eb2,investment_001,human_only,,,,,Invest,50
+71943476-538c-46bc-a8b0-5e4989644eb2,investment_001,human_only,,,,,Invest,50
+71943476-538c-46bc-a8b0-5e4989644eb2,investment_001,human_only,,,,,Do not invest,50
+71943476-538c-46bc-a8b0-5e4989644eb2,investment_001,human_only,,,,,Do not invest,26
+d5fda7d9-6236-480d-961b-5cbb38abd55a,investment_001,human_only,,,,,Invest,50,Do not invest,-4000.0000000000073,0
+d5fda7d9-6236-480d-961b-5cbb38abd55a,investment_001,human_only,,,,,Do not invest,23,Do not invest,-4000.0000000000073,1
