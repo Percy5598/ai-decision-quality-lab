@@ -22,6 +22,7 @@ class DecisionRecord:
 
     ai_recommendation: Optional[str]
     ai_confidence: Optional[int]
+    ai_correct: Optional[bool]
 
     final_decision: str
     final_confidence: int

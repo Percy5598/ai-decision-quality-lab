@@ -17,3 +17,4 @@ ab834e37-f715-40dc-a668-30d5735f48f0,investment_001,human_only,,,,,Invest,50,Do 
 ab834e37-f715-40dc-a668-30d5735f48f0,investment_001,human_only,,,,,Do not invest,50,Do not invest,-4000.0000000000073,1
 ab834e37-f715-40dc-a668-30d5735f48f0,investment_001,human_only,,,,,Invest,50,Do not invest,-4000.0000000000073,0
 ab834e37-f715-40dc-a668-30d5735f48f0,investment_001,human_only,,,,,Invest,25,Do not invest,-4000.0000000000073,0
+9aef1491-12ef-4700-bbf7-1b53b56b1bdd,investment_002,ai_uncertainty,,,Do not invest,61,False,Invest,50,Invest,30000.000000000007,1

@@ -9,6 +9,7 @@ class AIAdvice:
     recommendation: str
     probability: float
     confidence: int
+    correct: bool
     uncertainty_lower: float | None = None
     uncertainty_upper: float | None = None
 
@@ -16,43 +17,98 @@ class AIAdvice:
 def generate_advice(
     scenario: DecisionScenario,
     condition: ExperimentCondition,
+    ai_correct: bool = True,
 ) -> AIAdvice | None:
     """
-    Generate deterministic AI advice for an experimental condition.
+    Generate deterministic AI advice.
 
-    The underlying recommendation is identical across AI conditions.
-    Only the presentation of uncertainty changes.
+    Parameters
+    ----------
+    scenario:
+        The decision scenario.
+
+    condition:
+        Experimental condition.
+
+    ai_correct:
+        Controls whether the AI recommendation agrees with
+        the model-optimal benchmark.
+
+    Returns
+    -------
+    AIAdvice | None
+        AI advice for AI conditions, otherwise None.
     """
 
+    # Human-only condition receives no AI advice.
     if condition == ExperimentCondition.HUMAN_ONLY:
         return None
 
-    # Fixed model estimate for the prototype.
-    probability = 0.72
+    # --------------------------------------------------
+    # Determine AI recommendation
+    # --------------------------------------------------
+
+    if ai_correct:
+        recommendation = scenario.optimal_decision
+    else:
+        if scenario.optimal_decision == "Invest":
+            recommendation = "Do not invest"
+        else:
+            recommendation = "Invest"
+
+    # --------------------------------------------------
+    # AI probability estimate
+    # --------------------------------------------------
+
+    if recommendation == "Invest":
+        probability = 0.72
+    else:
+        probability = 0.38
+
+    # Fixed confidence for the prototype.
     confidence = 61
 
-    recommendation = (
-        "Invest"
-        if probability >= 0.50
-        else "Do not invest"
-    )
+    # --------------------------------------------------
+    # Point estimate condition
+    # --------------------------------------------------
 
     if condition == ExperimentCondition.AI_POINT_ESTIMATE:
+
         return AIAdvice(
             recommendation=recommendation,
             probability=probability,
             confidence=confidence,
+            correct=ai_correct,
         )
 
+    # --------------------------------------------------
+    # Uncertainty condition
+    # --------------------------------------------------
+
     if condition == ExperimentCondition.AI_UNCERTAINTY:
+
+        uncertainty_width = 0.05
+
+        lower = max(
+            0,
+            probability - uncertainty_width,
+        )
+
+        upper = min(
+            1,
+            probability + uncertainty_width,
+        )
+
         return AIAdvice(
             recommendation=recommendation,
             probability=probability,
             confidence=confidence,
-            uncertainty_lower=0.65,
-            uncertainty_upper=0.75,
+            correct=ai_correct,
+            uncertainty_lower=lower,
+            uncertainty_upper=upper,
         )
 
     raise ValueError(
         f"Unsupported experiment condition: {condition}"
     )
+

@@ -52,12 +52,25 @@ if "scenario" not in st.session_state:
 scenario = st.session_state.scenario
 
 # ==================================================
+# AI ACCURACY
+# ==================================================
+
+if "ai_correct" not in st.session_state:
+    st.session_state.ai_correct = random.choice(
+        [True, False]
+    )
+
+ai_correct = st.session_state.ai_correct
+
+
+# ==================================================
 # AI ADVICE
 # ==================================================
 
 advice = generate_advice(
     scenario=scenario,
     condition=condition,
+    ai_correct=ai_correct,
 )
 
 
@@ -272,6 +285,11 @@ if st.button(
             if advice is not None
             else None
         ),
+        ai_correct=(
+            advice.correct
+            if advice is not None
+            else None
+        ),
 
         final_decision=decision,
         final_confidence=confidence,
@@ -307,6 +325,7 @@ if st.button(
             "condition": record.condition.value,
             "ai_recommendation": record.ai_recommendation,
             "ai_confidence": record.ai_confidence,
+            "ai_correct": record.ai_correct,
             "final_decision": record.final_decision,
             "final_confidence": record.final_confidence,
             "optimal_decision": record.optimal_decision,
