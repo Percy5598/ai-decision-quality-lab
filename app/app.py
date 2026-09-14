@@ -1,5 +1,5 @@
 import uuid
-
+import random
 import streamlit as st
 
 from src.ai.advisor import generate_advice
@@ -46,8 +46,10 @@ condition = st.session_state.condition
 # SCENARIO
 # ==================================================
 
-scenario = SCENARIOS[0]
+if "scenario" not in st.session_state:
+    st.session_state.scenario = random.choice(SCENARIOS)
 
+scenario = st.session_state.scenario
 
 # ==================================================
 # AI ADVICE
