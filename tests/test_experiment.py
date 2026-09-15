@@ -37,3 +37,14 @@ def test_condition_assignment():
     condition = assign_condition()
 
     assert condition in list(ExperimentCondition)
+
+def test_expected_value():
+    scenario = SCENARIOS[0]
+
+    assert scenario.expected_value == -4_000
+
+
+def test_optimal_decision():
+    scenario = SCENARIOS[0]
+
+    assert scenario.optimal_decision == "Do not invest"    

@@ -17,23 +17,31 @@ class DecisionRecord:
     scenario_id: str
     condition: ExperimentCondition
 
-    initial_decision: Optional[str]
-    initial_confidence: Optional[int]
+    # Initial human decision
+    initial_decision: str
+    initial_confidence: int
 
+    # AI information
     ai_recommendation: Optional[str]
     ai_confidence: Optional[int]
     ai_correct: Optional[bool]
 
+    # Final human decision
     final_decision: str
     final_confidence: int
 
+    # Economic benchmark
     optimal_decision: str
     expected_value: float
+
+    # Outcome
     decision_quality: int
 
 
 def assign_condition() -> ExperimentCondition:
-    """Randomly assign a participant to an experimental condition."""
+    """
+    Randomly assign a participant to an experimental condition.
+    """
 
     return random.choice(
         list(ExperimentCondition)
