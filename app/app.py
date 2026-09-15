@@ -8,13 +8,14 @@ from src.decisions.scenarios import SCENARIOS
 from src.experiment.experiment import (
     DecisionRecord,
     assign_condition,
+    calculate_behavioral_measures,
 )
 from src.experiment.storage import save_decision
 
 
-# ==================================================
-# PAGE CONFIGURATION
-# ==================================================
+# ---------------------------------------------------------
+# Page configuration
+# ---------------------------------------------------------
 
 st.set_page_config(
     page_title="AI Decision Quality Lab",
@@ -23,67 +24,51 @@ st.set_page_config(
 )
 
 
-# ==================================================
-# SESSION INITIALIZATION
-# ==================================================
+# ---------------------------------------------------------
+# Session state initialization
+# ---------------------------------------------------------
 
 if "participant_id" not in st.session_state:
     st.session_state.participant_id = str(uuid.uuid4())
 
-
 if "condition" not in st.session_state:
     st.session_state.condition = assign_condition()
-
 
 if "scenario" not in st.session_state:
     st.session_state.scenario = random.choice(SCENARIOS)
 
-
 if "stage" not in st.session_state:
     st.session_state.stage = "initial"
-
 
 if "initial_decision" not in st.session_state:
     st.session_state.initial_decision = None
 
-
 if "initial_confidence" not in st.session_state:
     st.session_state.initial_confidence = None
-
 
 if "final_decision" not in st.session_state:
     st.session_state.final_decision = None
 
-
 if "final_confidence" not in st.session_state:
     st.session_state.final_confidence = None
 
+if "ai_correct" not in st.session_state:
+    st.session_state.ai_correct = random.choice([True, False])
 
-# ==================================================
-# SESSION VARIABLES
-# ==================================================
+
+# ---------------------------------------------------------
+# Experiment variables
+# ---------------------------------------------------------
 
 participant_id = st.session_state.participant_id
 condition = st.session_state.condition
 scenario = st.session_state.scenario
-
-
-# ==================================================
-# AI ACCURACY
-# ==================================================
-
-if "ai_correct" not in st.session_state:
-
-    st.session_state.ai_correct = random.choice(
-        [True, False]
-    )
-
 ai_correct = st.session_state.ai_correct
 
 
-# ==================================================
-# AI ADVICE
-# ==================================================
+# ---------------------------------------------------------
+# Generate AI advice
+# ---------------------------------------------------------
 
 advice = generate_advice(
     scenario=scenario,
@@ -92,74 +77,60 @@ advice = generate_advice(
 )
 
 
-# ==================================================
-# PAGE HEADER
-# ==================================================
+# ---------------------------------------------------------
+# Header
+# ---------------------------------------------------------
 
 st.title("🧠 AI Decision Quality Lab")
 
 st.write(
     """
-    This experiment studies how people make decisions
-    when interacting with AI recommendations.
+    This experiment studies how AI recommendations affect
+    human decision-making, confidence, and reliance on AI.
     """
-)
-
-st.caption(
-    "Please make your initial decision before seeing the AI recommendation."
 )
 
 st.divider()
 
 
-# ==================================================
-# SCENARIO
-# ==================================================
+# ---------------------------------------------------------
+# Scenario
+# ---------------------------------------------------------
 
-st.subheader("📊 Decision Scenario")
+st.subheader("📋 Decision Scenario")
 
-st.write(scenario.title)
+st.markdown(f"### {scenario.title}")
 
 st.write(scenario.description)
-
-
-# --------------------------------------------------
-# Scenario information
-# --------------------------------------------------
 
 col1, col2 = st.columns(2)
 
 with col1:
-
     st.metric(
-        "Expected Return",
-        f"{scenario.expected_return:.0%}",
-    )
-
-    st.metric(
-        "Success Probability",
-        f"{scenario.success_probability:.0%}",
-    )
-
-with col2:
-
-    st.metric(
-        "Potential Loss",
-        f"€{scenario.potential_loss:,.0f}",
-    )
-
-    st.metric(
-        "Investment",
+        "Potential investment",
         f"€{scenario.investment:,.0f}",
     )
 
+with col2:
+    st.metric(
+        "Potential loss",
+        f"€{scenario.potential_loss:,.0f}",
+    )
+
+st.write(
+    f"Expected return if successful: **{scenario.expected_return:.0%}**"
+)
+
+st.write(
+    f"Success probability information: **{scenario.success_probability:.0%}**"
+)
 
 st.divider()
 
 
-# ==================================================
+# =========================================================
 # STAGE 1 — INITIAL DECISION
-# ==================================================
+# =========================================================
 
 if st.session_state.stage == "initial":
 
@@ -167,7 +138,7 @@ if st.session_state.stage == "initial":
 
     st.write(
         """
-        Based only on the information above,
+        Based only on the scenario information above,
         what would you decide?
         """
     )
@@ -180,11 +151,6 @@ if st.session_state.stage == "initial":
         ],
         key="initial_decision_input",
     )
-
-
-    # --------------------------------------------------
-    # Initial confidence
-    # --------------------------------------------------
 
     st.subheader("🎯 Your Initial Confidence")
 
@@ -201,59 +167,37 @@ if st.session_state.stage == "initial":
         f"Confidence: **{initial_confidence}%**"
     )
 
-
-    st.divider()
-
-
-    # --------------------------------------------------
-    # Continue
-    # --------------------------------------------------
-
     if st.button(
         "Continue to AI Advice",
         type="primary",
         use_container_width=True,
     ):
 
-        st.session_state.initial_decision = (
-            initial_decision
-        )
-
-        st.session_state.initial_confidence = (
-            initial_confidence
-        )
-
+        st.session_state.initial_decision = initial_decision
+        st.session_state.initial_confidence = initial_confidence
         st.session_state.stage = "ai"
 
         st.rerun()
 
 
-# ==================================================
+# =========================================================
 # STAGE 2 — AI ADVICE + FINAL DECISION
-# ==================================================
+# =========================================================
 
 elif st.session_state.stage == "ai":
 
     st.subheader("2️⃣ AI Advisor")
-
-    # --------------------------------------------------
-    # Human-only condition
-    # --------------------------------------------------
 
     if advice is None:
 
         st.info(
             """
             You have been assigned to the
-            **human-only condition**.
+            **Human-Only condition**.
 
-            No AI recommendation will be provided.
+            No AI recommendation is provided.
             """
         )
-
-    # --------------------------------------------------
-    # AI condition
-    # --------------------------------------------------
 
     else:
 
@@ -266,25 +210,30 @@ elif st.session_state.stage == "ai":
         if condition.value == "ai_point_estimate":
 
             st.write(
-                "Estimated probability of success:"
+                "The AI provides a point estimate."
             )
 
             st.metric(
-                "AI Estimate",
+                "AI Estimated Probability",
                 f"{advice.probability:.0%}",
             )
 
         elif condition.value == "ai_uncertainty":
 
             st.write(
-                "Estimated probability of success:"
+                "The AI provides an estimate together with uncertainty."
             )
 
             st.metric(
-                "AI Estimated Range",
+                "AI Estimated Probability",
+                f"{advice.probability:.0%}",
+            )
+
+            st.metric(
+                "AI Uncertainty Range",
                 (
                     f"{advice.uncertainty_lower:.0%}"
-                    f"–"
+                    f" – "
                     f"{advice.uncertainty_upper:.0%}"
                 ),
             )
@@ -297,13 +246,11 @@ elif st.session_state.stage == "ai":
             f"AI confidence: **{advice.confidence}%**"
         )
 
-
     st.divider()
 
-
-    # ==================================================
-    # FINAL DECISION
-    # ==================================================
+    # -----------------------------------------------------
+    # Final decision
+    # -----------------------------------------------------
 
     st.subheader("3️⃣ Your Final Decision")
 
@@ -323,11 +270,6 @@ elif st.session_state.stage == "ai":
         key="final_decision_input",
     )
 
-
-    # --------------------------------------------------
-    # Final confidence
-    # --------------------------------------------------
-
     st.subheader("🎯 Your Final Confidence")
 
     final_confidence = st.slider(
@@ -343,13 +285,7 @@ elif st.session_state.stage == "ai":
         f"Confidence: **{final_confidence}%**"
     )
 
-
     st.divider()
-
-
-    # ==================================================
-    # SUBMIT EXPERIMENT
-    # ==================================================
 
     if st.button(
         "Submit Experiment",
@@ -357,26 +293,43 @@ elif st.session_state.stage == "ai":
         use_container_width=True,
     ):
 
-        # --------------------------------------------------
-        # Decision quality
-        # --------------------------------------------------
+        # -------------------------------------------------
+        # Calculate behavioral measures
+        # -------------------------------------------------
 
-        decision_quality = int(
-            final_decision
-            == scenario.optimal_decision
+        behavioral_measures = calculate_behavioral_measures(
+            initial_decision=st.session_state.initial_decision,
+            final_decision=final_decision,
+            initial_confidence=st.session_state.initial_confidence,
+            final_confidence=final_confidence,
+            ai_recommendation=(
+                advice.recommendation
+                if advice is not None
+                else None
+            ),
+            ai_correct=(
+                advice.correct
+                if advice is not None
+                else None
+            ),
+            optimal_decision=scenario.optimal_decision,
         )
 
+        # -------------------------------------------------
+        # Decision quality
+        # -------------------------------------------------
 
-        # --------------------------------------------------
-        # Create record
-        # --------------------------------------------------
+        decision_quality = int(
+            behavioral_measures["final_correct"]
+        )
+
+        # -------------------------------------------------
+        # Create experiment record
+        # -------------------------------------------------
 
         record = DecisionRecord(
-
             participant_id=participant_id,
-
             scenario_id=scenario.scenario_id,
-
             condition=condition,
 
             initial_decision=(
@@ -414,36 +367,52 @@ elif st.session_state.stage == "ai":
             expected_value=scenario.expected_value,
 
             decision_quality=decision_quality,
+
+            decision_changed=(
+                behavioral_measures["decision_changed"]
+            ),
+
+            initial_correct=(
+                behavioral_measures["initial_correct"]
+            ),
+
+            final_correct=(
+                behavioral_measures["final_correct"]
+            ),
+
+            followed_ai=(
+                behavioral_measures["followed_ai"]
+            ),
+
+            confidence_change=(
+                behavioral_measures["confidence_change"]
+            ),
+
+            over_reliance=(
+                behavioral_measures["over_reliance"]
+            ),
         )
 
-
-        # --------------------------------------------------
-        # Save
-        # --------------------------------------------------
+        # -------------------------------------------------
+        # Save experiment
+        # -------------------------------------------------
 
         save_decision(record)
 
+        # -------------------------------------------------
+        # Store final state
+        # -------------------------------------------------
 
-        # --------------------------------------------------
-        # Store final values
-        # --------------------------------------------------
-
-        st.session_state.final_decision = (
-            final_decision
-        )
-
-        st.session_state.final_confidence = (
-            final_confidence
-        )
-
+        st.session_state.final_decision = final_decision
+        st.session_state.final_confidence = final_confidence
         st.session_state.stage = "complete"
 
         st.rerun()
 
 
-# ==================================================
+# =========================================================
 # STAGE 3 — COMPLETION
-# ==================================================
+# =========================================================
 
 elif st.session_state.stage == "complete":
 
@@ -457,43 +426,54 @@ elif st.session_state.stage == "complete":
         """
         Your decision has been recorded.
 
-        The experiment is designed to study how AI
+        This experiment is designed to study how AI
         recommendations affect human decision-making.
         """
     )
 
     st.divider()
 
-    st.subheader("Your responses")
+    st.subheader("Your Responses")
 
-    st.write(
-        {
-            "Initial decision": (
-                st.session_state.initial_decision
-            ),
-            "Initial confidence": (
-                st.session_state.initial_confidence
-            ),
-            "Final decision": (
-                st.session_state.final_decision
-            ),
-            "Final confidence": (
-                st.session_state.final_confidence
-            ),
-        }
-    )
+    col1, col2 = st.columns(2)
 
-    # --------------------------------------------------
-    # Behavioral change
-    # --------------------------------------------------
+    with col1:
 
-    changed = (
+        st.write("**Initial decision**")
+
+        st.write(
+            st.session_state.initial_decision
+        )
+
+        st.write("**Initial confidence**")
+
+        st.write(
+            f"{st.session_state.initial_confidence}%"
+        )
+
+    with col2:
+
+        st.write("**Final decision**")
+
+        st.write(
+            st.session_state.final_decision
+        )
+
+        st.write("**Final confidence**")
+
+        st.write(
+            f"{st.session_state.final_confidence}%"
+        )
+
+    st.divider()
+
+    # -----------------------------------------------------
+    # Behavioral outcomes
+    # -----------------------------------------------------
+
+    decision_changed = (
         st.session_state.initial_decision
         != st.session_state.final_decision
-    )
-
-    st.write(
-        f"Decision changed after AI exposure: **{changed}**"
     )
 
     confidence_change = (
@@ -501,7 +481,20 @@ elif st.session_state.stage == "complete":
         - st.session_state.initial_confidence
     )
 
+    st.subheader("Behavioral Outcomes")
+
     st.write(
-        f"Confidence change: **{confidence_change:+d} points**"
+        f"Decision changed after AI exposure: "
+        f"**{decision_changed}**"
     )
 
+    st.write(
+        f"Confidence change: "
+        f"**{confidence_change:+d} points**"
+    )
+
+    st.divider()
+
+    st.caption(
+        f"Experiment ID: {participant_id}"
+    )

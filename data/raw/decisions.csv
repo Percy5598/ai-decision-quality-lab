@@ -1,21 +1,3 @@
-participant_id,scenario_id,condition,initial_decision,initial_confidence,ai_recommendation,ai_confidence,final_decision,final_confidence
-72081ed7-7c55-4933-ad38-4a9bd453875b,investment_001,human_only,,,,,Invest,50
-72081ed7-7c55-4933-ad38-4a9bd453875b,investment_001,human_only,,,,,Invest,50
-72081ed7-7c55-4933-ad38-4a9bd453875b,investment_001,human_only,,,,,Invest,50
-72081ed7-7c55-4933-ad38-4a9bd453875b,investment_001,human_only,,,,,Invest,50
-bcd78b52-0e51-428b-83bd-7944b112aa1c,investment_001,human_only,,,,,Invest,50
-71943476-538c-46bc-a8b0-5e4989644eb2,investment_001,human_only,,,,,Invest,50
-71943476-538c-46bc-a8b0-5e4989644eb2,investment_001,human_only,,,,,Invest,50
-71943476-538c-46bc-a8b0-5e4989644eb2,investment_001,human_only,,,,,Invest,50
-71943476-538c-46bc-a8b0-5e4989644eb2,investment_001,human_only,,,,,Invest,50
-71943476-538c-46bc-a8b0-5e4989644eb2,investment_001,human_only,,,,,Invest,50
-71943476-538c-46bc-a8b0-5e4989644eb2,investment_001,human_only,,,,,Do not invest,50
-71943476-538c-46bc-a8b0-5e4989644eb2,investment_001,human_only,,,,,Do not invest,26
-d5fda7d9-6236-480d-961b-5cbb38abd55a,investment_001,human_only,,,,,Invest,50,Do not invest,-4000.0000000000073,0
-d5fda7d9-6236-480d-961b-5cbb38abd55a,investment_001,human_only,,,,,Do not invest,23,Do not invest,-4000.0000000000073,1
-ab834e37-f715-40dc-a668-30d5735f48f0,investment_001,human_only,,,,,Invest,50,Do not invest,-4000.0000000000073,0
-ab834e37-f715-40dc-a668-30d5735f48f0,investment_001,human_only,,,,,Do not invest,50,Do not invest,-4000.0000000000073,1
-ab834e37-f715-40dc-a668-30d5735f48f0,investment_001,human_only,,,,,Invest,50,Do not invest,-4000.0000000000073,0
-ab834e37-f715-40dc-a668-30d5735f48f0,investment_001,human_only,,,,,Invest,25,Do not invest,-4000.0000000000073,0
-9aef1491-12ef-4700-bbf7-1b53b56b1bdd,investment_002,ai_uncertainty,,,Do not invest,61,False,Invest,50,Invest,30000.000000000007,1
-476ca058-c5ba-4abb-80ea-566747e36c54,investment_005,ai_point_estimate,Invest,50,Invest,61,False,Invest,50,Do not invest,-122000.0,0
+participant_id,scenario_id,condition,initial_decision,initial_confidence,ai_recommendation,ai_confidence,ai_correct,final_decision,final_confidence,optimal_decision,expected_value,decision_quality,decision_changed,initial_correct,final_correct,followed_ai,confidence_change,over_reliance
+72b75261-2227-461b-8951-8bdfa5e7b131,investment_001,ai_uncertainty,Invest,50,Do not invest,61,True,Invest,50,Do not invest,-4000.0000000000073,0,False,False,False,False,0,False
+89a12777-cccc-4df1-9e03-75a4949efdd8,investment_004,ai_point_estimate,Invest,50,Do not invest,61,True,Do not invest,57,Do not invest,-9500.0,1,True,False,True,True,7,False
