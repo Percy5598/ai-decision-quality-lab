@@ -13,9 +13,12 @@ from src.experiment.experiment import (
 from src.experiment.storage import save_decision
 
 
-# =========================================================
-# PAGE CONFIGURATION
-# =========================================================
+# ============================================================
+# CONFIGURATION
+# ============================================================
+
+TOTAL_TRIALS = min(5, len(SCENARIOS))
+
 
 st.set_page_config(
     page_title="AI Decision Quality Lab",
@@ -24,69 +27,62 @@ st.set_page_config(
 )
 
 
-# =========================================================
-# SESSION STATE
-# =========================================================
+# ============================================================
+# SESSION STATE INITIALIZATION
+# ============================================================
 
 if "participant_id" not in st.session_state:
-    st.session_state.participant_id = str(uuid.uuid4())
+    st.session_state.participant_id = str(
+        uuid.uuid4()
+    )
 
 if "condition" not in st.session_state:
     st.session_state.condition = assign_condition()
 
-if "scenario" not in st.session_state:
-    st.session_state.scenario = random.choice(SCENARIOS)
+if "scenario_order" not in st.session_state:
+
+    scenario_indices = list(
+        range(len(SCENARIOS))
+    )
+
+    random.shuffle(scenario_indices)
+
+    st.session_state.scenario_order = (
+        scenario_indices[:TOTAL_TRIALS]
+    )
+
+if "trial_number" not in st.session_state:
+    st.session_state.trial_number = 1
 
 if "stage" not in st.session_state:
     st.session_state.stage = "initial"
 
-if "initial_decision" not in st.session_state:
-    st.session_state.initial_decision = None
-
-if "initial_confidence" not in st.session_state:
-    st.session_state.initial_confidence = None
-
-if "perceived_risk_initial" not in st.session_state:
-    st.session_state.perceived_risk_initial = None
-
-if "final_decision" not in st.session_state:
-    st.session_state.final_decision = None
-
-if "final_confidence" not in st.session_state:
-    st.session_state.final_confidence = None
-
-if "perceived_risk_final" not in st.session_state:
-    st.session_state.perceived_risk_final = None
-
-if "trust_in_ai" not in st.session_state:
-    st.session_state.trust_in_ai = None
-
-if "perceived_ai_reliability" not in st.session_state:
-    st.session_state.perceived_ai_reliability = None
-
-if "ai_influence" not in st.session_state:
-    st.session_state.ai_influence = None
-
-if "decision_reason" not in st.session_state:
-    st.session_state.decision_reason = None
-
 if "ai_correct" not in st.session_state:
-    st.session_state.ai_correct = random.choice([True, False])
+    st.session_state.ai_correct = random.choice(
+        [True, False]
+    )
 
 
-# =========================================================
-# VARIABLES
-# =========================================================
+# ============================================================
+# CURRENT TRIAL
+# ============================================================
 
-participant_id = st.session_state.participant_id
+trial_number = st.session_state.trial_number
+
+scenario_index = st.session_state.scenario_order[
+    trial_number - 1
+]
+
+scenario = SCENARIOS[scenario_index]
+
 condition = st.session_state.condition
-scenario = st.session_state.scenario
+
 ai_correct = st.session_state.ai_correct
 
 
-# =========================================================
+# ============================================================
 # AI ADVICE
-# =========================================================
+# ============================================================
 
 advice = generate_advice(
     scenario=scenario,
@@ -95,46 +91,74 @@ advice = generate_advice(
 )
 
 
-# =========================================================
+# ============================================================
 # HEADER
-# =========================================================
+# ============================================================
 
 st.title("🧠 AI Decision Quality Lab")
 
 st.write(
     """
-    This experiment studies how AI recommendations affect
-    human decision-making, confidence, risk perception,
-    and reliance on AI.
+    This experiment studies how AI recommendations
+    affect human decision-making, confidence,
+    perceived risk, and reliance on AI.
     """
 )
+
+
+# ============================================================
+# PROGRESS
+# ============================================================
+
+st.subheader(
+    f"Trial {trial_number} of {TOTAL_TRIALS}"
+)
+
+progress = (
+    trial_number / TOTAL_TRIALS
+)
+
+st.progress(progress)
+
+st.caption(
+    f"Experimental condition: {condition.value}"
+)
+
 
 st.divider()
 
 
-# =========================================================
+# ============================================================
 # SCENARIO
-# =========================================================
+# ============================================================
 
 st.subheader("📋 Decision Scenario")
 
-st.markdown(f"### {scenario.title}")
+st.markdown(
+    f"### {scenario.title}"
+)
 
-st.write(scenario.description)
+st.write(
+    scenario.description
+)
+
 
 col1, col2 = st.columns(2)
 
 with col1:
+
     st.metric(
         "Investment",
         f"€{scenario.investment:,.0f}",
     )
 
 with col2:
+
     st.metric(
         "Potential Loss",
         f"€{scenario.potential_loss:,.0f}",
     )
+
 
 st.write(
     f"Expected return if successful: "
@@ -146,73 +170,152 @@ st.write(
     f"**{scenario.success_probability:.0%}**"
 )
 
+
 st.divider()
 
 
-# =========================================================
+# ============================================================
 # STAGE 1 — INITIAL DECISION
-# =========================================================
+# ============================================================
 
 if st.session_state.stage == "initial":
 
-    st.subheader("1️⃣ Your Initial Decision")
+    st.subheader(
+        "1️⃣ Before seeing any AI recommendation"
+    )
 
-    st.write(
+    st.info(
         """
-        Based only on the information above,
-        what would you decide?
+        Please make your decision based only on
+        the information provided in the scenario.
         """
     )
 
+    # -------------------------
+    # Question 1
+    # -------------------------
+
+    st.markdown("### Question 1")
+
     initial_decision = st.radio(
-        "Choose one:",
+        "What would you decide?",
         [
             "Invest",
             "Do not invest",
         ],
-        key="initial_decision_input",
+        key=f"initial_decision_{trial_number}",
     )
 
-    st.subheader("🎯 Confidence")
+    # -------------------------
+    # Question 2
+    # -------------------------
+
+    st.markdown("### Question 2")
 
     initial_confidence = st.slider(
         "How confident are you in your decision?",
-        0,
-        100,
-        50,
-        1,
-        key="initial_confidence_input",
+        min_value=0,
+        max_value=100,
+        value=50,
+        step=1,
+        key=f"initial_confidence_{trial_number}",
     )
 
-    st.write(
-        f"Confidence: **{initial_confidence}%**"
+    st.caption(
+        f"Confidence: {initial_confidence}/100"
     )
 
-    st.subheader("⚠️ Perceived Risk")
+    # -------------------------
+    # Question 3
+    # -------------------------
+
+    st.markdown("### Question 3")
 
     perceived_risk_initial = st.slider(
         "How risky do you think this decision is?",
-        0,
-        100,
-        50,
-        1,
-        key="perceived_risk_initial_input",
+        min_value=0,
+        max_value=100,
+        value=50,
+        step=1,
+        key=f"risk_initial_{trial_number}",
     )
 
-    st.write(
-        f"Perceived risk: **{perceived_risk_initial}/100**"
+    # -------------------------
+    # Question 4
+    # -------------------------
+
+    st.markdown("### Question 4")
+
+    financial_attractiveness_initial = st.slider(
+        "How financially attractive is this investment?",
+        min_value=0,
+        max_value=100,
+        value=50,
+        step=1,
+        key=f"attractiveness_{trial_number}",
     )
+
+    # -------------------------
+    # Question 5
+    # -------------------------
+
+    st.markdown("### Question 5")
+
+    perceived_uncertainty_initial = st.slider(
+        "How uncertain do you think the outcome is?",
+        min_value=0,
+        max_value=100,
+        value=50,
+        step=1,
+        key=f"uncertainty_initial_{trial_number}",
+    )
+
+    # -------------------------
+    # Question 6
+    # -------------------------
+
+    st.markdown("### Question 6")
+
+    decision_difficulty = st.slider(
+        "How difficult was this decision?",
+        min_value=0,
+        max_value=100,
+        value=50,
+        step=1,
+        key=f"difficulty_{trial_number}",
+    )
+
+    st.divider()
 
     if st.button(
-        "Continue",
+        "Continue to AI information →",
         type="primary",
         use_container_width=True,
     ):
 
-        st.session_state.initial_decision = initial_decision
-        st.session_state.initial_confidence = initial_confidence
+        # Store all initial responses.
+        st.session_state.initial_decision = (
+            initial_decision
+        )
+
+        st.session_state.initial_confidence = (
+            initial_confidence
+        )
+
         st.session_state.perceived_risk_initial = (
             perceived_risk_initial
+        )
+
+        st.session_state.financial_attractiveness_initial = (
+            financial_attractiveness_initial
+        )
+
+        st.session_state.perceived_uncertainty_initial = (
+            perceived_uncertainty_initial
+        )
+
+        st.session_state.decision_difficulty = (
+            decision_difficulty
         )
 
         st.session_state.stage = "ai"
@@ -220,65 +323,61 @@ if st.session_state.stage == "initial":
         st.rerun()
 
 
-# =========================================================
-# STAGE 2 — AI + FINAL DECISION
-# =========================================================
+# ============================================================
+# STAGE 2 — AI INFORMATION + FINAL DECISION
+# ============================================================
 
 elif st.session_state.stage == "ai":
 
-    st.subheader("2️⃣ AI Advisor")
-
-    # -----------------------------------------------------
-    # Human-only condition
-    # -----------------------------------------------------
+    st.subheader(
+        "2️⃣ AI information"
+    )
 
     if advice is None:
 
         st.info(
             """
-            You have been assigned to the
-            **Human-Only condition**.
+            You are in the **Human-Only condition**.
 
             No AI recommendation is provided.
             """
         )
 
-        trust_in_ai = None
-        perceived_ai_reliability = None
-        ai_influence = None
-
-    # -----------------------------------------------------
-    # AI conditions
-    # -----------------------------------------------------
-
     else:
 
         st.info(
             f"""
-            **AI Recommendation: {advice.recommendation}**
+            **AI Recommendation**
+
+            {advice.recommendation}
             """
+        )
+
+        st.metric(
+            "AI Estimated Probability",
+            f"{advice.probability:.0%}",
+        )
+
+        st.write(
+            f"AI confidence: **{advice.confidence}%**"
         )
 
         if condition.value == "ai_point_estimate":
 
             st.write(
-                "The AI provides a point probability estimate."
-            )
-
-            st.metric(
-                "AI Estimated Probability",
-                f"{advice.probability:.0%}",
+                """
+                The AI provides a point probability
+                estimate without an explicit uncertainty range.
+                """
             )
 
         elif condition.value == "ai_uncertainty":
 
             st.write(
-                "The AI provides an estimate together with uncertainty."
-            )
-
-            st.metric(
-                "AI Estimated Probability",
-                f"{advice.probability:.0%}",
+                """
+                The AI provides a probability estimate
+                together with an uncertainty range.
+                """
             )
 
             st.metric(
@@ -290,166 +389,282 @@ elif st.session_state.stage == "ai":
                 ),
             )
 
-            st.caption(
-                "The AI expresses uncertainty using a probability range."
-            )
-
-        st.write(
-            f"AI confidence: **{advice.confidence}%**"
-        )
-
-        st.divider()
-
-        st.subheader("🤖 Your Evaluation of the AI")
-
-        trust_in_ai = st.slider(
-            "How much do you trust the AI recommendation?",
-            0,
-            100,
-            50,
-            1,
-            key="trust_in_ai_input",
-        )
-
-        perceived_ai_reliability = st.slider(
-            "How reliable do you think this AI is?",
-            0,
-            100,
-            50,
-            1,
-            key="perceived_ai_reliability_input",
-        )
-
-        ai_influence = st.slider(
-            "How much did the AI influence your decision?",
-            0,
-            100,
-            50,
-            1,
-            key="ai_influence_input",
-        )
-
-    # -----------------------------------------------------
-    # Final decision
-    # -----------------------------------------------------
 
     st.divider()
 
-    st.subheader("3️⃣ Your Final Decision")
 
-    st.write(
-        """
-        After considering the information above,
-        what is your final decision?
-        """
+    # ========================================================
+    # FINAL DECISION
+    # ========================================================
+
+    st.subheader(
+        "3️⃣ After considering the information"
     )
 
+    # -------------------------
+    # Question 7
+    # -------------------------
+
+    st.markdown("### Question 7")
+
     final_decision = st.radio(
-        "Choose one:",
+        "What is your final decision?",
         [
             "Invest",
             "Do not invest",
         ],
-        key="final_decision_input",
+        key=f"final_decision_{trial_number}",
     )
 
-    st.subheader("🎯 Final Confidence")
+    # -------------------------
+    # Question 8
+    # -------------------------
+
+    st.markdown("### Question 8")
 
     final_confidence = st.slider(
-        "How confident are you now?",
-        0,
-        100,
-        50,
-        1,
-        key="final_confidence_input",
+        "How confident are you in your final decision?",
+        min_value=0,
+        max_value=100,
+        value=50,
+        step=1,
+        key=f"final_confidence_{trial_number}",
     )
 
-    st.write(
-        f"Final confidence: **{final_confidence}%**"
-    )
+    # -------------------------
+    # Question 9
+    # -------------------------
 
-    st.subheader("⚠️ Final Perceived Risk")
+    st.markdown("### Question 9")
 
     perceived_risk_final = st.slider(
-        "How risky do you think this decision is now?",
-        0,
-        100,
-        50,
-        1,
-        key="perceived_risk_final_input",
+        "How risky do you think the decision is now?",
+        min_value=0,
+        max_value=100,
+        value=50,
+        step=1,
+        key=f"risk_final_{trial_number}",
     )
 
-    st.write(
-        f"Final perceived risk: **{perceived_risk_final}/100**"
+    # -------------------------
+    # Question 10
+    # -------------------------
+
+    st.markdown("### Question 10")
+
+    perceived_uncertainty_final = st.slider(
+        "How uncertain do you think the outcome is now?",
+        min_value=0,
+        max_value=100,
+        value=50,
+        step=1,
+        key=f"uncertainty_final_{trial_number}",
     )
 
-    st.subheader("💭 Why did you make this final decision?")
 
-    decision_reason = st.radio(
-        "Select the main reason:",
-        [
-            "I agreed with the AI",
-            "I disagreed with the AI",
-            "The AI increased my confidence",
-            "The AI decreased my confidence",
-            "I focused mainly on the probability of success",
-            "I focused mainly on the potential loss",
-            "I made my own judgment regardless of the AI",
-        ],
-        key="decision_reason_input",
-    )
+    # ========================================================
+    # AI EVALUATION
+    # ========================================================
 
     st.divider()
 
+    if advice is not None:
+
+        st.subheader(
+            "4️⃣ Evaluation of the AI"
+        )
+
+        # -------------------------
+        # Question 11
+        # -------------------------
+
+        st.markdown("### Question 11")
+
+        trust_in_ai = st.slider(
+            "How much do you trust the AI recommendation?",
+            min_value=0,
+            max_value=100,
+            value=50,
+            step=1,
+            key=f"trust_{trial_number}",
+        )
+
+        # -------------------------
+        # Question 12
+        # -------------------------
+
+        st.markdown("### Question 12")
+
+        perceived_ai_reliability = st.slider(
+            "How reliable do you think the AI is?",
+            min_value=0,
+            max_value=100,
+            value=50,
+            step=1,
+            key=f"reliability_{trial_number}",
+        )
+
+        # -------------------------
+        # Question 13
+        # -------------------------
+
+        st.markdown("### Question 13")
+
+        ai_clarity = st.slider(
+            "How clear was the AI information?",
+            min_value=0,
+            max_value=100,
+            value=50,
+            step=1,
+            key=f"clarity_{trial_number}",
+        )
+
+        # -------------------------
+        # Question 14
+        # -------------------------
+
+        st.markdown("### Question 14")
+
+        ai_agreement = st.slider(
+            "How much did you agree with the AI recommendation?",
+            min_value=0,
+            max_value=100,
+            value=50,
+            step=1,
+            key=f"agreement_{trial_number}",
+        )
+
+        # -------------------------
+        # Question 15
+        # -------------------------
+
+        st.markdown("### Question 15")
+
+        ai_influence = st.slider(
+            "How much did the AI influence your final decision?",
+            min_value=0,
+            max_value=100,
+            value=50,
+            step=1,
+            key=f"influence_{trial_number}",
+        )
+
+        # -------------------------
+        # Question 16
+        # -------------------------
+
+        st.markdown("### Question 16")
+
+        decision_reason = st.radio(
+            "What was the main reason for your final decision?",
+            [
+                "I agreed with the AI",
+                "I disagreed with the AI",
+                "The AI increased my confidence",
+                "The AI decreased my confidence",
+                "I focused mainly on the probability of success",
+                "I focused mainly on the potential loss",
+                "I made my own judgment regardless of the AI",
+            ],
+            key=f"reason_{trial_number}",
+        )
+
+    else:
+
+        # Human-only condition.
+        trust_in_ai = None
+        perceived_ai_reliability = None
+        ai_clarity = None
+        ai_agreement = None
+        ai_influence = None
+
+        st.subheader(
+            "4️⃣ Reason for your final decision"
+        )
+
+        decision_reason = st.radio(
+            "What was the main reason for your final decision?",
+            [
+                "I focused mainly on the probability of success",
+                "I focused mainly on the potential loss",
+                "The investment appeared financially attractive",
+                "The investment appeared financially unattractive",
+                "I felt confident in my initial judgment",
+                "I felt uncertain about the decision",
+                "I made my own overall judgment",
+            ],
+            key=f"reason_{trial_number}",
+        )
+
+
+    st.divider()
+
+
+    # ========================================================
+    # SUBMIT TRIAL
+    # ========================================================
+
     if st.button(
-        "Submit Experiment",
+        "Submit Trial",
         type="primary",
         use_container_width=True,
     ):
 
-        # -------------------------------------------------
-        # Calculate behavioral measures
-        # -------------------------------------------------
-
-        behavioral_measures = calculate_behavioral_measures(
-            initial_decision=(
-                st.session_state.initial_decision
-            ),
-            final_decision=final_decision,
-            initial_confidence=(
-                st.session_state.initial_confidence
-            ),
-            final_confidence=final_confidence,
-            ai_recommendation=(
-                advice.recommendation
-                if advice is not None
-                else None
-            ),
-            ai_correct=(
-                advice.correct
-                if advice is not None
-                else None
-            ),
-            optimal_decision=scenario.optimal_decision,
+        behavioral_measures = (
+            calculate_behavioral_measures(
+                initial_decision=(
+                    st.session_state.initial_decision
+                ),
+                final_decision=final_decision,
+                initial_confidence=(
+                    st.session_state.initial_confidence
+                ),
+                final_confidence=final_confidence,
+                perceived_risk_initial=(
+                    st.session_state.perceived_risk_initial
+                ),
+                perceived_risk_final=(
+                    perceived_risk_final
+                ),
+                perceived_uncertainty_initial=(
+                    st.session_state.perceived_uncertainty_initial
+                ),
+                perceived_uncertainty_final=(
+                    perceived_uncertainty_final
+                ),
+                ai_recommendation=(
+                    advice.recommendation
+                    if advice is not None
+                    else None
+                ),
+                ai_correct=(
+                    advice.correct
+                    if advice is not None
+                    else None
+                ),
+                optimal_decision=(
+                    scenario.optimal_decision
+                ),
+            )
         )
 
-        # -------------------------------------------------
-        # Decision quality
-        # -------------------------------------------------
 
-        decision_quality = int(
-            behavioral_measures["final_correct"]
-        )
-
-        # -------------------------------------------------
-        # Create record
-        # -------------------------------------------------
+        # ====================================================
+        # CREATE TRIAL RECORD
+        # ====================================================
 
         record = DecisionRecord(
-            participant_id=participant_id,
+            participant_id=(
+                st.session_state.participant_id
+            ),
+
+            trial_number=trial_number,
+
             scenario_id=scenario.scenario_id,
+
             condition=condition,
 
+            # BEFORE AI
             initial_decision=(
                 st.session_state.initial_decision
             ),
@@ -462,8 +677,27 @@ elif st.session_state.stage == "ai":
                 st.session_state.perceived_risk_initial
             ),
 
+            financial_attractiveness_initial=(
+                st.session_state.financial_attractiveness_initial
+            ),
+
+            perceived_uncertainty_initial=(
+                st.session_state.perceived_uncertainty_initial
+            ),
+
+            decision_difficulty=(
+                st.session_state.decision_difficulty
+            ),
+
+            # AI
             ai_recommendation=(
                 advice.recommendation
+                if advice is not None
+                else None
+            ),
+
+            ai_probability=(
+                advice.probability
                 if advice is not None
                 else None
             ),
@@ -474,20 +708,25 @@ elif st.session_state.stage == "ai":
                 else None
             ),
 
+            ai_uncertainty_lower=(
+                advice.uncertainty_lower
+                if advice is not None
+                else None
+            ),
+
+            ai_uncertainty_upper=(
+                advice.uncertainty_upper
+                if advice is not None
+                else None
+            ),
+
             ai_correct=(
                 advice.correct
                 if advice is not None
                 else None
             ),
 
-            trust_in_ai=trust_in_ai,
-
-            perceived_ai_reliability=(
-                perceived_ai_reliability
-            ),
-
-            ai_influence=ai_influence,
-
+            # AFTER AI
             final_decision=final_decision,
 
             final_confidence=final_confidence,
@@ -496,8 +735,26 @@ elif st.session_state.stage == "ai":
                 perceived_risk_final
             ),
 
+            perceived_uncertainty_final=(
+                perceived_uncertainty_final
+            ),
+
+            # AI EVALUATION
+            trust_in_ai=trust_in_ai,
+
+            perceived_ai_reliability=(
+                perceived_ai_reliability
+            ),
+
+            ai_clarity=ai_clarity,
+
+            ai_agreement=ai_agreement,
+
+            ai_influence=ai_influence,
+
             decision_reason=decision_reason,
 
+            # ECONOMIC BENCHMARK
             optimal_decision=(
                 scenario.optimal_decision
             ),
@@ -506,182 +763,190 @@ elif st.session_state.stage == "ai":
                 scenario.expected_value
             ),
 
-            decision_quality=decision_quality,
+            # BEHAVIORAL OUTCOMES
+            decision_quality=(
+                behavioral_measures[
+                    "decision_quality"
+                ]
+            ),
 
             decision_changed=(
-                behavioral_measures["decision_changed"]
+                behavioral_measures[
+                    "decision_changed"
+                ]
             ),
 
             initial_correct=(
-                behavioral_measures["initial_correct"]
+                behavioral_measures[
+                    "initial_correct"
+                ]
             ),
 
             final_correct=(
-                behavioral_measures["final_correct"]
+                behavioral_measures[
+                    "final_correct"
+                ]
             ),
 
             followed_ai=(
-                behavioral_measures["followed_ai"]
+                behavioral_measures[
+                    "followed_ai"
+                ]
             ),
 
             confidence_change=(
-                behavioral_measures["confidence_change"]
+                behavioral_measures[
+                    "confidence_change"
+                ]
             ),
 
+            risk_change=(
+                behavioral_measures[
+                    "risk_change"
+                ]
+            ),
+
+            uncertainty_change=(
+                behavioral_measures[
+                    "uncertainty_change"
+                ]
+            ),
+
+            # RELIANCE
             over_reliance=(
-                behavioral_measures["over_reliance"]
+                behavioral_measures[
+                    "over_reliance"
+                ]
             ),
 
             under_reliance=(
-                behavioral_measures["under_reliance"]
+                behavioral_measures[
+                    "under_reliance"
+                ]
             ),
         )
 
-        # -------------------------------------------------
-        # Save
-        # -------------------------------------------------
+
+        # ====================================================
+        # SAVE TRIAL
+        # ====================================================
 
         save_decision(record)
 
-        # -------------------------------------------------
-        # Store results
-        # -------------------------------------------------
 
-        st.session_state.final_decision = final_decision
-        st.session_state.final_confidence = final_confidence
-        st.session_state.perceived_risk_final = (
-            perceived_risk_final
-        )
-        st.session_state.trust_in_ai = trust_in_ai
-        st.session_state.perceived_ai_reliability = (
-            perceived_ai_reliability
-        )
-        st.session_state.ai_influence = ai_influence
-        st.session_state.decision_reason = decision_reason
+        # ====================================================
+        # MOVE TO NEXT TRIAL
+        # ====================================================
 
-        st.session_state.stage = "complete"
+        if trial_number < TOTAL_TRIALS:
 
-        st.rerun()
+            st.session_state.trial_number += 1
+
+            st.session_state.stage = "initial"
+
+            # New AI correctness for the next trial.
+            st.session_state.ai_correct = random.choice(
+                [True, False]
+            )
+
+            st.rerun()
+
+        else:
+
+            st.session_state.stage = "complete"
+
+            st.rerun()
 
 
-# =========================================================
-# STAGE 3 — COMPLETION
-# =========================================================
+# ============================================================
+# EXPERIMENT COMPLETE
+# ============================================================
 
 elif st.session_state.stage == "complete":
 
     st.success(
-        "✅ Experiment completed successfully!"
+        "🎉 Experiment completed successfully!"
     )
 
-    st.subheader("Thank you")
+    st.title(
+        "Thank you for participating"
+    )
 
     st.write(
         """
-        Your responses have been recorded.
+        You have completed all decision-making trials.
 
-        The experiment studies how AI affects human
-        decision-making, confidence, risk perception,
-        and reliance.
+        Your responses have been recorded for analysis.
         """
     )
 
     st.divider()
 
-    st.subheader("Your Responses")
+    st.subheader(
+        "Experiment Summary"
+    )
 
-    col1, col2 = st.columns(2)
+    st.metric(
+        "Trials completed",
+        TOTAL_TRIALS,
+    )
 
-    with col1:
+    st.write(
+        f"Participant ID: "
+        f"`{st.session_state.participant_id}`"
+    )
 
-        st.write("**Initial decision**")
-
-        st.write(
-            st.session_state.initial_decision
-        )
-
-        st.write("**Initial confidence**")
-
-        st.write(
-            f"{st.session_state.initial_confidence}%"
-        )
-
-        st.write("**Initial perceived risk**")
-
-        st.write(
-            f"{st.session_state.perceived_risk_initial}/100"
-        )
-
-    with col2:
-
-        st.write("**Final decision**")
-
-        st.write(
-            st.session_state.final_decision
-        )
-
-        st.write("**Final confidence**")
-
-        st.write(
-            f"{st.session_state.final_confidence}%"
-        )
-
-        st.write("**Final perceived risk**")
-
-        st.write(
-            f"{st.session_state.perceived_risk_final}/100"
-        )
+    st.write(
+        f"Experimental condition: "
+        f"**{condition.value}**"
+    )
 
     st.divider()
 
-    decision_changed = (
-        st.session_state.initial_decision
-        != st.session_state.final_decision
-    )
-
-    confidence_change = (
-        st.session_state.final_confidence
-        - st.session_state.initial_confidence
-    )
-
-    risk_change = (
-        st.session_state.perceived_risk_final
-        - st.session_state.perceived_risk_initial
-    )
-
-    st.subheader("Behavioral Outcomes")
-
-    st.write(
-        f"Decision changed: **{decision_changed}**"
+    st.subheader(
+        "What this experiment measures"
     )
 
     st.write(
-        f"Confidence change: **{confidence_change:+d} points**"
+        """
+        The experiment collects information about:
+
+        • Human decision quality
+
+        • Confidence
+
+        • Risk perception
+
+        • Uncertainty perception
+
+        • Decision difficulty
+
+        • Trust in AI
+
+        • Perceived AI reliability
+
+        • AI clarity
+
+        • AI agreement
+
+        • AI influence
+
+        • Changes in decisions after AI exposure
+
+        • Over-reliance on incorrect AI
+
+        • Under-reliance on correct AI
+        """
     )
-
-    st.write(
-        f"Risk perception change: **{risk_change:+d} points**"
-    )
-
-    if st.session_state.trust_in_ai is not None:
-
-        st.write(
-            f"Trust in AI: "
-            f"**{st.session_state.trust_in_ai}/100**"
-        )
-
-        st.write(
-            f"Perceived AI reliability: "
-            f"**{st.session_state.perceived_ai_reliability}/100**"
-        )
-
-        st.write(
-            f"AI influence: "
-            f"**{st.session_state.ai_influence}/100**"
-        )
 
     st.divider()
 
-    st.caption(
-        f"Experiment ID: {participant_id}"
+    st.info(
+        """
+        The experiment uses a model-based economic benchmark
+        to evaluate decision quality. This benchmark represents
+        the optimal decision under the assumptions encoded in
+        the scenario model; it is not a universal definition
+        of a correct real-world decision.
+        """
     )

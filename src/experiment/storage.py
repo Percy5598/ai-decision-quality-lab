@@ -9,6 +9,10 @@ DATA_FILE = Path("data/raw/decisions.csv")
 
 
 def save_decision(record: DecisionRecord) -> None:
+    """
+    Append one trial record to the experiment CSV.
+    """
+
     DATA_FILE.parent.mkdir(
         parents=True,
         exist_ok=True,
