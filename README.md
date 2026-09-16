@@ -30,7 +30,7 @@ The application presents decision scenarios, records decisions, and stores exper
 
 The current live prototype is available here:
 
-https://ai-decision-quality-lab.streamlit.app/
+https://ai-decision-quality-lab-101.streamlit.app/ 
 
 ## Repository Structure
 
