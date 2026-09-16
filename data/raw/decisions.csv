@@ -4,3 +4,8 @@ e1bb454c-ea4d-4412-9d47-6db43a0afaf0,2,investment_004,ai_point_estimate,Invest,5
 e1bb454c-ea4d-4412-9d47-6db43a0afaf0,3,investment_003,ai_point_estimate,Invest,50,50,50,50,50,Do not invest,0.38,61,,,True,Invest,50,50,50,50,50,50,50,50,I agreed with the AI,Do not invest,-82200.0,0,False,False,False,False,0,0,0,False,True
 e1bb454c-ea4d-4412-9d47-6db43a0afaf0,4,investment_002,ai_point_estimate,Invest,50,50,50,50,50,Invest,0.72,61,,,True,Invest,50,50,50,50,50,50,50,50,I agreed with the AI,Invest,30000.000000000007,1,False,True,True,True,0,0,0,False,False
 e1bb454c-ea4d-4412-9d47-6db43a0afaf0,5,investment_005,ai_point_estimate,Invest,50,50,50,50,50,Invest,0.72,61,,,False,Invest,50,50,50,50,50,50,50,50,I agreed with the AI,Do not invest,-122000.0,0,False,False,False,True,0,0,0,False,False
+P-3A3D7503,6,human_only,A,70,,,,A,50,A,True,True,False,,-20,2026-09-16T12:31:22.979114
+P-4D14EB51,1,ai_point_estimate,A,50,Investment A,0.78,Investment A has a higher expected monetary value based on the stated probabilities and payoffs.,A,50,A,True,True,False,False,0,2026-09-16T12:58:56.098239
+P-4D14EB51,9,ai_point_estimate,A,50,Project A,0.74,Project A has the higher expected monetary value despite greater variability in possible outcomes.,A,50,A,True,True,False,False,0,2026-09-16T12:59:03.026887
+P-4D14EB51,8,ai_point_estimate,A,50,Portfolio A,0.64,Portfolio A has a higher expected monetary value but also contains greater outcome uncertainty.,A,50,A,True,True,False,False,0,2026-09-16T12:59:10.104402
+P-4D14EB51,7,ai_point_estimate,A,50,Startup B,0.69,Startup B provides a more predictable return and lower downside uncertainty.,A,50,B,False,False,False,False,0,2026-09-16T12:59:14.399643

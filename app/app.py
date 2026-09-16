@@ -572,7 +572,7 @@ elif st.session_state.phase == "ai":
             max_value=100,
             value=50,
             step=1,
-            format="%d%",
+            format="%d%%",
         )
 
         submitted = st.form_submit_button(
