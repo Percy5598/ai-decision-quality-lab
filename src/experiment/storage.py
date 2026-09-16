@@ -5,23 +5,27 @@ from pathlib import Path
 from src.experiment.experiment import DecisionRecord
 
 
-DATA_FILE = Path("data/raw/decisions.csv")
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+
+DATA_DIR = PROJECT_ROOT / "data" / "raw"
+
+DATA_FILE = DATA_DIR / "decisions.csv"
 
 
-def save_decision(record: DecisionRecord) -> None:
+def ensure_data_directory():
+    """Create the data directory if it does not exist."""
+
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def save_decision(record: DecisionRecord):
     """
-    Append one trial record to the experiment CSV.
+    Append one decision record to the CSV dataset.
     """
 
-    DATA_FILE.parent.mkdir(
-        parents=True,
-        exist_ok=True,
-    )
+    ensure_data_directory()
 
-    row = asdict(record)
-
-    # Convert Enum to its underlying string value.
-    row["condition"] = record.condition.value
+    record_data = asdict(record)
 
     file_exists = DATA_FILE.exists()
 
@@ -33,10 +37,18 @@ def save_decision(record: DecisionRecord) -> None:
 
         writer = csv.DictWriter(
             file,
-            fieldnames=row.keys(),
+            fieldnames=record_data.keys(),
         )
 
         if not file_exists:
             writer.writeheader()
 
-        writer.writerow(row)
+        writer.writerow(record_data)
+
+
+def get_data_file() -> Path:
+    """Return the location of the experiment dataset."""
+
+    ensure_data_directory()
+
+    return DATA_FILE
